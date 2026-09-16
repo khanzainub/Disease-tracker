@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pain Tracker – Rheumatic & Autoimmune Pain Diary</title>
+<style>
+:root {
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --ink:#172033;
+  --muted:#68758a;
+  --line:#d8e0ea;
+  --accent:#285b9a;
+  --accent-soft:#eaf2fb;
+  --digit:#7455a8;
+  --mild:#2f9e62;
+  --moderate:#d98b17;
+  --severe:#d94b4b;
+  --zero:#94a3b8;
+  --shadow:0 7px 24px rgba(20,35,60,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+header{background:#fff;border-bottom:1px solid #e7ecf2;padding:16px 20px;position:sticky;top:0;z-index:20}
+.header-inner{max-width:1380px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand h1{margin:0;font-size:clamp(22px,3vw,30px)}
+.brand p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+.wrap{max-width:1380px;margin:auto;padding:18px}
+.layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(330px,.7fr);gap:18px;align-items:start}
+.card{background:var(--card);border-radius:18px;padding:16px;box-shadow:var(--shadow);border:1px solid #edf1f5}
+.card h2,.card h3{margin-top:0}
+.body-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.figure-card{min-width:0;border:1px solid var(--line);border-radius:15px;padding:10px;background:#fbfdff}
+.figure-title{text-align:center;font-weight:800;margin-bottom:4px}
+.figure-note{text-align:center;color:var(--muted);font-size:11px;margin-bottom:6px}
+.body-svg{width:100%;height:auto;display:block;max-height:680px}
+.skeleton-line{stroke:#8190a3;stroke-width:7;stroke-linecap:round;fill:none}
+.skeleton-thin{stroke:#a8b4c3;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.skeleton-shape{fill:#f7f9fc;stroke:#8d9aaa;stroke-width:3}
+.scapula{fill:#eef3f8;stroke:#a0adbc;stroke-width:3}
+.side-label{fill:#65758a;font-size:11px;font-weight:800;letter-spacing:.06em}
+.pain-point{outline:none}
+.hit-ring{fill:transparent;stroke:transparent;pointer-events:all;cursor:pointer}
+.point-dot{fill:#fff;stroke:var(--accent);stroke-width:4;pointer-events:none;transition:.15s}
+.digit-point .point-dot{stroke:var(--digit)}
+.point-leader{stroke:#7b8796;stroke-width:2;pointer-events:none}
+.pain-point:hover .point-dot,.pain-point:focus .point-dot{fill:var(--accent-soft);stroke-width:5}
+.pain-point.selected .point-dot{fill:#ffd4d4;stroke:#8f2525;stroke-width:5}
+.pain-point.pain-zero .point-dot{fill:#fff;stroke:var(--zero)}
+.pain-point.pain-mild .point-dot{fill:#dff5e8;stroke:var(--mild)}
+.pain-point.pain-moderate .point-dot{fill:#fff0d1;stroke:var(--moderate)}
+.pain-point.pain-severe .point-dot{fill:#ffe1e1;stroke:var(--severe)}
+.legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:11px}
+.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:-1px}
+.form-section{border-top:1px solid var(--line);padding-top:14px;margin-top:15px}
+.form-section:first-child{border-top:0;padding-top:0;margin-top:0}
+.form-title{font-size:14px;font-weight:850;margin-bottom:8px}
+label{display:block;font-weight:750;font-size:13px;margin:11px 0 5px}
+input[type="date"],input[type="number"],input[type="text"],select,textarea{
+  width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);padding:10px 11px;min-height:44px
+}
+textarea{min-height:88px;resize:vertical}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.selected-box{background:var(--accent-soft);border:1px solid #c9d9ec;border-radius:11px;padding:11px;font-weight:800;min-height:50px}
+.selected-meta{font-size:11px;color:var(--muted);font-weight:500;margin-top:3px}
+.pain-score{text-align:center;font-size:48px;font-weight:900;line-height:1;margin:8px 0;color:var(--zero)}
+input[type="range"]{width:100%}
+.range-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.primary-btn,.secondary-btn,.tool-btn{border:0;border-radius:10px;padding:11px 13px;font-weight:800;min-height:44px}
+.primary-btn{background:var(--accent);color:#fff;width:100%;margin-top:14px}
+.secondary-btn{background:#e8edf3;color:#334155;width:100%;margin-top:8px}
+.tool-btn{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.small-note{font-size:11px;color:var(--muted);margin-top:5px}
+.med-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;margin-top:7px}
+.check{display:flex;align-items:center;gap:7px;font-size:12px;color:#334155}
+.check input{width:16px;height:16px}
+.privacy{background:#f7f9fb;border:1px solid var(--line);border-radius:11px;padding:10px;font-size:11px;color:#526174}
+.history-head,.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.history-list{display:grid;gap:9px}
+.entry{border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;background:#fff}
+.entry h4{margin:0 0 3px;font-size:14px}
+.entry-meta{font-size:11px;color:var(--muted)}
+.entry-note{font-size:12px;margin-top:5px}
+.entry-actions{display:flex;gap:5px;margin-top:7px}
+.entry-actions button{border:0;background:transparent;color:var(--accent);font-weight:800;padding:3px 5px;font-size:11px}
+.entry-actions .delete{color:#b23434}
+.score-badge{font-weight:900;font-size:19px;white-space:nowrap}
+.empty{color:var(--muted);font-size:13px;padding:18px;text-align:center}
+.chart-controls{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:10px;align-items:end}
+.location-checks{border:1px solid var(--line);border-radius:10px;padding:8px;max-height:145px;overflow:auto;background:#fff}
+.location-checks label{margin:0 0 5px;font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px}
+.chart-wrap{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:8px;background:#fff;overflow:hidden}
+#painChart{width:100%;height:auto;display:block}
+.chart-message{font-size:12px;color:var(--muted);margin-top:6px}
+details.about{margin-top:18px}
+details.about summary{font-weight:850;cursor:pointer}
+.about-body{margin-top:9px;color:#4b5a6e;font-size:13px}
+footer{max-width:1380px;margin:0 auto 28px;padding:0 18px;color:var(--muted);font-size:11px}
+@media(max-width:980px){
+  .layout{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .wrap{padding:10px}
+  .body-grid{grid-template-columns:1fr}
+  .chart-controls{grid-template-columns:1fr}
+  .two-col{grid-template-columns:1fr}
+  .med-grid{grid-template-columns:1fr}
+  header{padding:12px}
+  .card{padding:12px;border-radius:14px}
+  .figure-card{padding:8px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1>Pain Tracker</h1>
+      <p>Rheumatic & autoimmune pain diary · private browser-based tracking</p>
+    </div>
+    <div class="top-actions">
+      <button class="tool-btn" id="jumpHistoryBtn" type="button">History</button>
+      <button class="tool-btn" id="jumpChartsBtn" type="button">Charts</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="layout">
+    <section class="card">
+      <h2>Body pain map</h2>
+      <p class="small-note" style="margin-top:-6px">For simplicity, the diagram's left side is <strong>your left</strong> and its right side is <strong>your right</strong>. Tap any visible point.</p>
+
+      <div class="body-grid">
+        <div class="figure-card">
+          <div class="figure-title">Front</div>
+          <div class="figure-note">Upper/lower limb joints, fingers and toes</div>
+          <svg class="body-svg" viewBox="0 0 360 700" aria-label="Front body pain map">
+            <text x="18" y="26" class="side-label">YOUR LEFT</text>
+            <text x="276" y="26" class="side-label">YOUR RIGHT</text>
+
+            <!-- Simplified front figure -->
+            <circle cx="180" cy="65" r="28" class="skeleton-shape"></circle>
+            <line x1="180" y1="94" x2="180" y2="310" class="skeleton-line"></line>
+            <line x1="120" y1="130" x2="240" y2="130" class="skeleton-line"></line>
+            <line x1="120" y1="135" x2="92" y2="235" class="skeleton-line"></line>
+            <line x1="92" y1="235" x2="82" y2="338" class="skeleton-line"></line>
+            <line x1="240" y1="135" x2="268" y2="235" class="skeleton-line"></line>
+            <line x1="268" y1="235" x2="278" y2="338" class="skeleton-line"></line>
+
+            <!-- Simple hands -->
+            <circle cx="82" cy="350" r="12" class="skeleton-shape"></circle>
+            <circle cx="278" cy="350" r="12" class="skeleton-shape"></circle>
+
+            <!-- Pelvis and legs -->
+            <path d="M140 305 Q180 338 220 305 Q215 345 180 357 Q145 345 140 305Z" class="skeleton-shape"></path>
+            <line x1="145" y1="330" x2="140" y2="472" class="skeleton-line"></line>
+            <line x1="215" y1="330" x2="220" y2="472" class="skeleton-line"></line>
+            <line x1="140" y1="472" x2="136" y2="612" class="skeleton-line"></line>
+            <line x1="220" y1="472" x2="224" y2="612" class="skeleton-line"></line>
+            <path d="M132 620 Q112 630 104 645 Q128 652 150 641" class="skeleton-thin"></path>
+            <path d="M228 620 Q248 630 256 645 Q232 652 210 641" class="skeleton-thin"></path>
+
+            
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="left_shoulder" data-label="Left shoulder" data-region="Shoulder"
+       data-side="Left" data-view="Front"
+       aria-label="Left shoulder">
+      
+      <circle class="hit-ring" cx="120" cy="132" r="18"></circle>
+      <circle class="point-dot" cx="120" cy="132" r="8"></circle>
+      <title>Left shoulder</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="right_shoulder" data-label="Right shoulder" data-region="Shoulder"
+       data-side="Right" data-view="Front"
+       aria-label="Right shoulder">
+      
+      <circle class="hit-ring" cx="240" cy="132" r="18"></circle>
+      <circle class="point-dot" cx="240" cy="132" r="8"></circle>
+      <title>Right shoulder</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="left_elbow" data-label="Left elbow" data-region="Elbow"
+       data-side="Left" data-view="Front"
+       aria-label="Left elbow">
+      
+      <circle class="hit-ring" cx="92" cy="235" r="18"></circle>
+      <circle class="point-dot" cx="92" cy="235" r="8"></circle>
+      <title>Left elbow</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="right_elbow" data-label="Right elbow" data-region="Elbow"
+       data-side="Right" data-view="Front"
+       aria-label="Right elbow">
+      
+      <circle class="hit-ring" cx="268" cy="235" r="18"></circle>
+      <circle class="point-dot" cx="268" cy="235" r="8"></circle>
+      <title>Right elbow</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="left_wrist" data-label="Left wrist" data-region="Wrist"
+       data-side="Left" data-view="Front"
+       aria-label="Left wrist">
+      
+      <circle class="hit-ring" cx="82" cy="338" r="18"></circle>
+      <circle class="point-dot" cx="82" cy="338" r="8"></circle>
+      <title>Left wrist</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="right_wrist" data-label="Right wrist" data-region="Wrist"
+       data-side="Right" data-view="Front"
+       aria-label="Right wrist">
+      
+      <circle class="hit-ring" cx="278" cy="338" r="18"></circle>
+      <circle class="point-dot" cx="278" cy="338" r="8"></circle>
+      <title>Right wrist</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="left_hip" data-label="Left hip joint" data-region="Hip"
+       data-side="Left" data-view="Front"
+       aria-label="Left hip joint">
+      
+      <circle class="hit-ring" cx="145" cy="330" r="18"></circle>
+      <circle class="point-dot" cx="145" cy="330" r="8"></circle>
+      <title>Left hip joint</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="right_hip" data-label="Right hip joint" data-region="Hip"
+       data-side="Right" data-view="Front"
+       aria-label="Right hip joint">
+      
+      <circle class="hit-ring" cx="215" cy="330" r="18"></circle>
+      <circle class="point-dot" cx="215" cy="330" r="8"></circle>
+      <title>Right hip joint</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="left_knee" data-label="Left knee" data-region="Knee"
+       data-side="Left" data-view="Front"
+       aria-label="Left knee">
+      
+      <circle class="hit-ring" cx="140" cy="472" r="18"></circle>
+      <circle class="point-dot" cx="140" cy="472" r="8"></circle>
+      <title>Left knee</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="right_knee" data-label="Right knee" data-region="Knee"
+       data-side="Right" data-view="Front"
+       aria-label="Right knee">
+      
+      <circle class="hit-ring" cx="220" cy="472" r="18"></circle>
+      <circle class="point-dot" cx="220" cy="472" r="8"></circle>
+      <title>Right knee</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="left_ankle" data-label="Left ankle" data-region="Ankle"
+       data-side="Left" data-view="Front"
+       aria-label="Left ankle">
+      
+      <circle class="hit-ring" cx="136" cy="612" r="18"></circle>
+      <circle class="point-dot" cx="136" cy="612" r="8"></circle>
+      <title>Left ankle</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="right_ankle" data-label="Right ankle" data-region="Ankle"
+       data-side="Right" data-view="Front"
+       aria-label="Right ankle">
+      
+      <circle class="hit-ring" cx="224" cy="612" r="18"></circle>
+      <circle class="point-dot" cx="224" cy="612" r="8"></circle>
+      <title>Right ankle</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_thumb" data-label="Left thumb" data-region="Finger"
+       data-side="Left" data-view="Front"
+       aria-label="Left thumb">
+      <line class="point-leader" x1="74" y1="349" x2="44" y2="360"></line>
+      <circle class="hit-ring" cx="44" cy="360" r="18"></circle>
+      <circle class="point-dot" cx="44" cy="360" r="8"></circle>
+      <title>Left thumb</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_index" data-label="Left index finger" data-region="Finger"
+       data-side="Left" data-view="Front"
+       aria-label="Left index finger">
+      <line class="point-leader" x1="76" y1="358" x2="43" y2="386"></line>
+      <circle class="hit-ring" cx="43" cy="386" r="18"></circle>
+      <circle class="point-dot" cx="43" cy="386" r="8"></circle>
+      <title>Left index finger</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_middle" data-label="Left middle finger" data-region="Finger"
+       data-side="Left" data-view="Front"
+       aria-label="Left middle finger">
+      <line class="point-leader" x1="79" y1="365" x2="57" y2="405"></line>
+      <circle class="hit-ring" cx="57" cy="405" r="18"></circle>
+      <circle class="point-dot" cx="57" cy="405" r="8"></circle>
+      <title>Left middle finger</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_ring" data-label="Left ring finger" data-region="Finger"
+       data-side="Left" data-view="Front"
+       aria-label="Left ring finger">
+      <line class="point-leader" x1="83" y1="367" x2="75" y2="410"></line>
+      <circle class="hit-ring" cx="75" cy="410" r="18"></circle>
+      <circle class="point-dot" cx="75" cy="410" r="8"></circle>
+      <title>Left ring finger</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_little" data-label="Left little finger" data-region="Finger"
+       data-side="Left" data-view="Front"
+       aria-label="Left little finger">
+      <line class="point-leader" x1="87" y1="363" x2="93" y2="400"></line>
+      <circle class="hit-ring" cx="93" cy="400" r="18"></circle>
+      <circle class="point-dot" cx="93" cy="400" r="8"></circle>
+      <title>Left little finger</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_thumb" data-label="Right thumb" data-region="Finger"
+       data-side="Right" data-view="Front"
+       aria-label="Right thumb">
+      <line class="point-leader" x1="286" y1="349" x2="316" y2="360"></line>
+      <circle class="hit-ring" cx="316" cy="360" r="18"></circle>
+      <circle class="point-dot" cx="316" cy="360" r="8"></circle>
+      <title>Right thumb</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_index" data-label="Right index finger" data-region="Finger"
+       data-side="Right" data-view="Front"
+       aria-label="Right index finger">
+      <line class="point-leader" x1="284" y1="358" x2="317" y2="386"></line>
+      <circle class="hit-ring" cx="317" cy="386" r="18"></circle>
+      <circle class="point-dot" cx="317" cy="386" r="8"></circle>
+      <title>Right index finger</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_middle" data-label="Right middle finger" data-region="Finger"
+       data-side="Right" data-view="Front"
+       aria-label="Right middle finger">
+      <line class="point-leader" x1="281" y1="365" x2="303" y2="405"></line>
+      <circle class="hit-ring" cx="303" cy="405" r="18"></circle>
+      <circle class="point-dot" cx="303" cy="405" r="8"></circle>
+      <title>Right middle finger</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_ring" data-label="Right ring finger" data-region="Finger"
+       data-side="Right" data-view="Front"
+       aria-label="Right ring finger">
+      <line class="point-leader" x1="277" y1="367" x2="285" y2="410"></line>
+      <circle class="hit-ring" cx="285" cy="410" r="18"></circle>
+      <circle class="point-dot" cx="285" cy="410" r="8"></circle>
+      <title>Right ring finger</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_little" data-label="Right little finger" data-region="Finger"
+       data-side="Right" data-view="Front"
+       aria-label="Right little finger">
+      <line class="point-leader" x1="273" y1="363" x2="267" y2="400"></line>
+      <circle class="hit-ring" cx="267" cy="400" r="18"></circle>
+      <circle class="point-dot" cx="267" cy="400" r="8"></circle>
+      <title>Right little finger</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_great_toe" data-label="Left great toe" data-region="Toe"
+       data-side="Left" data-view="Front"
+       aria-label="Left great toe">
+      <line class="point-leader" x1="122" y1="640" x2="92" y2="660"></line>
+      <circle class="hit-ring" cx="92" cy="660" r="18"></circle>
+      <circle class="point-dot" cx="92" cy="660" r="8"></circle>
+      <title>Left great toe</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_second_toe" data-label="Left second toe" data-region="Toe"
+       data-side="Left" data-view="Front"
+       aria-label="Left second toe">
+      <line class="point-leader" x1="128" y1="642" x2="112" y2="672"></line>
+      <circle class="hit-ring" cx="112" cy="672" r="18"></circle>
+      <circle class="point-dot" cx="112" cy="672" r="8"></circle>
+      <title>Left second toe</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_third_toe" data-label="Left third toe" data-region="Toe"
+       data-side="Left" data-view="Front"
+       aria-label="Left third toe">
+      <line class="point-leader" x1="135" y1="644" x2="134" y2="677"></line>
+      <circle class="hit-ring" cx="134" cy="677" r="18"></circle>
+      <circle class="point-dot" cx="134" cy="677" r="8"></circle>
+      <title>Left third toe</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_fourth_toe" data-label="Left fourth toe" data-region="Toe"
+       data-side="Left" data-view="Front"
+       aria-label="Left fourth toe">
+      <line class="point-leader" x1="142" y1="642" x2="156" y2="672"></line>
+      <circle class="hit-ring" cx="156" cy="672" r="18"></circle>
+      <circle class="point-dot" cx="156" cy="672" r="8"></circle>
+      <title>Left fourth toe</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="left_little_toe" data-label="Left little toe" data-region="Toe"
+       data-side="Left" data-view="Front"
+       aria-label="Left little toe">
+      <line class="point-leader" x1="149" y1="640" x2="176" y2="660"></line>
+      <circle class="hit-ring" cx="176" cy="660" r="18"></circle>
+      <circle class="point-dot" cx="176" cy="660" r="8"></circle>
+      <title>Left little toe</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_great_toe" data-label="Right great toe" data-region="Toe"
+       data-side="Right" data-view="Front"
+       aria-label="Right great toe">
+      <line class="point-leader" x1="238" y1="640" x2="268" y2="660"></line>
+      <circle class="hit-ring" cx="268" cy="660" r="18"></circle>
+      <circle class="point-dot" cx="268" cy="660" r="8"></circle>
+      <title>Right great toe</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_second_toe" data-label="Right second toe" data-region="Toe"
+       data-side="Right" data-view="Front"
+       aria-label="Right second toe">
+      <line class="point-leader" x1="232" y1="642" x2="248" y2="672"></line>
+      <circle class="hit-ring" cx="248" cy="672" r="18"></circle>
+      <circle class="point-dot" cx="248" cy="672" r="8"></circle>
+      <title>Right second toe</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_third_toe" data-label="Right third toe" data-region="Toe"
+       data-side="Right" data-view="Front"
+       aria-label="Right third toe">
+      <line class="point-leader" x1="225" y1="644" x2="226" y2="677"></line>
+      <circle class="hit-ring" cx="226" cy="677" r="18"></circle>
+      <circle class="point-dot" cx="226" cy="677" r="8"></circle>
+      <title>Right third toe</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_fourth_toe" data-label="Right fourth toe" data-region="Toe"
+       data-side="Right" data-view="Front"
+       aria-label="Right fourth toe">
+      <line class="point-leader" x1="218" y1="642" x2="204" y2="672"></line>
+      <circle class="hit-ring" cx="204" cy="672" r="18"></circle>
+      <circle class="point-dot" cx="204" cy="672" r="8"></circle>
+      <title>Right fourth toe</title>
+    </g>
+
+    <g class="pain-point digit-point" tabindex="0" role="button"
+       data-id="right_little_toe" data-label="Right little toe" data-region="Toe"
+       data-side="Right" data-view="Front"
+       aria-label="Right little toe">
+      <line class="point-leader" x1="211" y1="640" x2="184" y2="660"></line>
+      <circle class="hit-ring" cx="184" cy="660" r="18"></circle>
+      <circle class="point-dot" cx="184" cy="660" r="8"></circle>
+      <title>Right little toe</title>
+    </g>
+          </svg>
+        </div>
+
+        <div class="figure-card">
+          <div class="figure-title">Back</div>
+          <div class="figure-note">Spine, sacroiliac joints and scapular regions</div>
+          <svg class="body-svg" viewBox="0 0 360 700" aria-label="Back body pain map">
+            <text x="18" y="26" class="side-label">YOUR LEFT</text>
+            <text x="276" y="26" class="side-label">YOUR RIGHT</text>
+
+            <!-- Simplified back figure -->
+            <circle cx="180" cy="65" r="28" class="skeleton-shape"></circle>
+            <line x1="180" y1="94" x2="180" y2="365" class="skeleton-thin"></line>
+            <line x1="120" y1="130" x2="240" y2="130" class="skeleton-line"></line>
+            <line x1="120" y1="135" x2="92" y2="235" class="skeleton-line"></line>
+            <line x1="92" y1="235" x2="82" y2="338" class="skeleton-line"></line>
+            <line x1="240" y1="135" x2="268" y2="235" class="skeleton-line"></line>
+            <line x1="268" y1="235" x2="278" y2="338" class="skeleton-line"></line>
+
+            <!-- Scapulae -->
+            <path d="M120 148 Q147 144 158 174 Q150 215 123 220 Q110 185 120 148Z" class="scapula"></path>
+            <path d="M240 148 Q213 144 202 174 Q210 215 237 220 Q250 185 240 148Z" class="scapula"></path>
+
+            <!-- Pelvis and legs for orientation -->
+            <path d="M140 330 Q180 363 220 330 Q214 382 180 392 Q146 382 140 330Z" class="skeleton-shape"></path>
+            <line x1="145" y1="360" x2="140" y2="495" class="skeleton-line"></line>
+            <line x1="215" y1="360" x2="220" y2="495" class="skeleton-line"></line>
+            <line x1="140" y1="495" x2="136" y2="625" class="skeleton-line"></line>
+            <line x1="220" y1="495" x2="224" y2="625" class="skeleton-line"></line>
+
+            
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="left_scapula" data-label="Left scapular / shoulder-blade region" data-region="Scapula"
+       data-side="Left" data-view="Back"
+       aria-label="Left scapular / shoulder-blade region">
+      
+      <circle class="hit-ring" cx="140" cy="185" r="18"></circle>
+      <circle class="point-dot" cx="140" cy="185" r="8"></circle>
+      <title>Left scapular / shoulder-blade region</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="right_scapula" data-label="Right scapular / shoulder-blade region" data-region="Scapula"
+       data-side="Right" data-view="Back"
+       aria-label="Right scapular / shoulder-blade region">
+      
+      <circle class="hit-ring" cx="220" cy="185" r="18"></circle>
+      <circle class="point-dot" cx="220" cy="185" r="8"></circle>
+      <title>Right scapular / shoulder-blade region</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_upper_cervical" data-label="Upper cervical spine" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Upper cervical spine">
+      
+      <circle class="hit-ring" cx="180" cy="106" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="106" r="8"></circle>
+      <title>Upper cervical spine</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_lower_cervical" data-label="Lower cervical spine" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Lower cervical spine">
+      
+      <circle class="hit-ring" cx="180" cy="130" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="130" r="8"></circle>
+      <title>Lower cervical spine</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_cervicothoracic" data-label="Cervicothoracic junction" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Cervicothoracic junction">
+      
+      <circle class="hit-ring" cx="180" cy="154" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="154" r="8"></circle>
+      <title>Cervicothoracic junction</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_upper_thoracic" data-label="Upper thoracic spine" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Upper thoracic spine">
+      
+      <circle class="hit-ring" cx="180" cy="183" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="183" r="8"></circle>
+      <title>Upper thoracic spine</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_mid_thoracic" data-label="Mid thoracic spine" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Mid thoracic spine">
+      
+      <circle class="hit-ring" cx="180" cy="215" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="215" r="8"></circle>
+      <title>Mid thoracic spine</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_lower_thoracic" data-label="Lower thoracic spine" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Lower thoracic spine">
+      
+      <circle class="hit-ring" cx="180" cy="247" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="247" r="8"></circle>
+      <title>Lower thoracic spine</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_thoracolumbar" data-label="Thoracolumbar junction" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Thoracolumbar junction">
+      
+      <circle class="hit-ring" cx="180" cy="278" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="278" r="8"></circle>
+      <title>Thoracolumbar junction</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_upper_lumbar" data-label="Upper lumbar spine" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Upper lumbar spine">
+      
+      <circle class="hit-ring" cx="180" cy="307" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="307" r="8"></circle>
+      <title>Upper lumbar spine</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_lower_lumbar" data-label="Lower lumbar spine" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Lower lumbar spine">
+      
+      <circle class="hit-ring" cx="180" cy="334" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="334" r="8"></circle>
+      <title>Lower lumbar spine</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="spine_lumbosacral" data-label="Lumbosacral region" data-region="Spine"
+       data-side="Midline" data-view="Back"
+       aria-label="Lumbosacral region">
+      
+      <circle class="hit-ring" cx="180" cy="360" r="18"></circle>
+      <circle class="point-dot" cx="180" cy="360" r="8"></circle>
+      <title>Lumbosacral region</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="left_si_joint" data-label="Left sacroiliac joint" data-region="Sacroiliac joint"
+       data-side="Left" data-view="Back"
+       aria-label="Left sacroiliac joint">
+      
+      <circle class="hit-ring" cx="156" cy="372" r="18"></circle>
+      <circle class="point-dot" cx="156" cy="372" r="8"></circle>
+      <title>Left sacroiliac joint</title>
+    </g>
+
+    <g class="pain-point" tabindex="0" role="button"
+       data-id="right_si_joint" data-label="Right sacroiliac joint" data-region="Sacroiliac joint"
+       data-side="Right" data-view="Back"
+       aria-label="Right sacroiliac joint">
+      
+      <circle class="hit-ring" cx="204" cy="372" r="18"></circle>
+      <circle class="point-dot" cx="204" cy="372" r="8"></circle>
+      <title>Right sacroiliac joint</title>
+    </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><i class="legend-dot" style="background:#fff;border:2px solid var(--accent)"></i>selectable point</span>
+        <span><i class="legend-dot" style="background:#fff;border:2px solid var(--digit)"></i>finger/toe</span>
+        <span><i class="legend-dot" style="background:var(--mild)"></i>1–3 mild</span>
+        <span><i class="legend-dot" style="background:var(--moderate)"></i>4–6 moderate</span>
+        <span><i class="legend-dot" style="background:var(--severe)"></i>7–10 severe</span>
+      </div>
+    </section>
+
+    <aside class="card" id="recordPanel">
+      <div class="form-section">
+        <div class="form-title">Patient / clinical information <span style="font-weight:500;color:var(--muted)">(all optional)</span></div>
+
+        <div class="two-col">
+          <div>
+            <label for="age">Age</label>
+            <input id="age" type="number" min="0" max="120" step="1" placeholder="Optional">
+          </div>
+          <div>
+            <label for="gender">Gender</label>
+            <select id="gender">
+              <option value="">Optional</option>
+              <option>Female</option>
+              <option>Male</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="diagnosis">Diagnosis / condition</label>
+        <select id="diagnosis">
+          <option value="">Select diagnosis / condition</option>
+<optgroup label="Spondyloarthritis">
+  <option>Axial spondyloarthritis (axSpA)</option>
+  <option>Non-radiographic axial spondyloarthritis (nr-axSpA)</option>
+  <option>Ankylosing spondylitis / radiographic axial SpA</option>
+  <option>Peripheral spondyloarthritis</option>
+  <option>Undifferentiated / unclassified spondyloarthritis</option>
+  <option>Psoriatic arthritis</option>
+  <option>Reactive arthritis</option>
+  <option>Enteropathic / IBD-associated arthritis</option>
+</optgroup>
+<optgroup label="Rheumatoid / inflammatory arthritis">
+  <option>Rheumatoid arthritis</option>
+  <option>Seronegative rheumatoid arthritis</option>
+  <option>Palindromic rheumatism</option>
+  <option>Juvenile idiopathic arthritis</option>
+  <option>Adult-onset Still's disease</option>
+</optgroup>
+<optgroup label="Degenerative">
+  <option>Osteoarthritis</option>
+  <option>Post-traumatic arthritis</option>
+  <option>Patellofemoral osteoarthritis / chondromalacia</option>
+  <option>Other degenerative arthritis</option>
+</optgroup>
+<optgroup label="Crystal arthritis">
+  <option>Gout</option>
+  <option>CPPD / pseudogout</option>
+</optgroup>
+<optgroup label="Connective-tissue / autoimmune disease">
+  <option>Systemic lupus erythematosus</option>
+  <option>Sjögren syndrome</option>
+  <option>Systemic sclerosis / scleroderma</option>
+  <option>Mixed connective tissue disease</option>
+  <option>Undifferentiated connective tissue disease</option>
+  <option>Antiphospholipid syndrome</option>
+  <option>Overlap connective tissue disease</option>
+</optgroup>
+<optgroup label="Inflammatory myopathy">
+  <option>Dermatomyositis</option>
+  <option>Polymyositis</option>
+  <option>Immune-mediated necrotizing myopathy</option>
+  <option>Antisynthetase syndrome</option>
+</optgroup>
+<optgroup label="Other rheumatic / autoimmune">
+  <option>Polymyalgia rheumatica</option>
+  <option>Behçet disease</option>
+  <option>Vasculitis</option>
+  <option>Sarcoidosis</option>
+  <option>Relapsing polychondritis</option>
+  <option>Other autoimmune disorder</option>
+  <option>Other inflammatory arthritis</option>
+  <option>Under investigation / no confirmed diagnosis</option>
+  <option>Other / specify manually</option>
+</optgroup>
+        </select>
+        <div class="small-note">This information is for personal symptom tracking and documentation and does not establish a medical diagnosis.</div>
+
+        <label for="otherDiagnosis">Other / specify manually</label>
+        <input id="otherDiagnosis" type="text" placeholder="Optional diagnosis or condition">
+
+        <div class="two-col">
+          <div>
+            <label for="diagnosisStatus">Diagnosis status</label>
+            <select id="diagnosisStatus">
+              <option value="">Optional</option>
+              <option>Confirmed</option>
+              <option>Provisional</option>
+              <option>Under evaluation</option>
+              <option>Self-reported</option>
+            </select>
+          </div>
+          <div>
+            <label for="diseaseDuration">Disease duration</label>
+            <select id="diseaseDuration">
+              <option value="">Optional</option>
+              <option>Less than 6 months</option>
+              <option>6–12 months</option>
+              <option>1–2 years</option>
+              <option>2–5 years</option>
+              <option>5–10 years</option>
+              <option>More than 10 years</option>
+              <option>Unknown</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <label for="symptomYear">Year symptoms began</label>
+            <input id="symptomYear" type="number" min="1900" max="2100" placeholder="Optional">
+          </div>
+          <div>
+            <label for="diagnosisYear">Year diagnosed</label>
+            <input id="diagnosisYear" type="number" min="1900" max="2100" placeholder="Optional">
+          </div>
+        </div>
+
+        <label for="diseaseNotes">Disease notes</label>
+        <textarea id="diseaseNotes" placeholder="Optional"></textarea>
+
+        <label>Medication / treatment categories</label>
+        <div class="med-grid" id="medicationCategories">
+          <label class="check"><input type="checkbox" value="NSAID"> NSAID</label>
+          <label class="check"><input type="checkbox" value="Corticosteroid"> Corticosteroid</label>
+          <label class="check"><input type="checkbox" value="Conventional DMARD"> Conventional DMARD</label>
+          <label class="check"><input type="checkbox" value="Biologic DMARD"> Biologic DMARD</label>
+          <label class="check"><input type="checkbox" value="JAK inhibitor"> JAK inhibitor</label>
+          <label class="check"><input type="checkbox" value="Pain medication"> Pain medication</label>
+          <label class="check"><input type="checkbox" value="Physiotherapy"> Physiotherapy</label>
+          <label class="check"><input type="checkbox" value="Exercise / rehabilitation"> Exercise / rehabilitation</label>
+          <label class="check"><input type="checkbox" value="Injection therapy"> Injection therapy</label>
+          <label class="check"><input type="checkbox" value="Other"> Other</label>
+        </div>
+
+        <label for="medicationText">Current medications / treatment</label>
+        <input id="medicationText" type="text" placeholder="Type medication names or treatment details">
+      </div>
+
+      <div class="form-section">
+        <div class="form-title">Pain entry</div>
+
+        <label>Selected location</label>
+        <div class="selected-box" id="selectedBox">
+          Tap a visible point on the body map
+          <div class="selected-meta" id="selectedMeta"></div>
+        </div>
+
+        <label for="entryDate">Date</label>
+        <input id="entryDate" type="date">
+
+        <label for="painSlider">Pain intensity</label>
+        <div class="pain-score" id="painScore">0</div>
+        <input id="painSlider" type="range" min="0" max="10" step="1" value="0">
+        <div class="range-labels">
+          <span>0 · No pain</span>
+          <span>5 · Moderate</span>
+          <span>10 · Worst</span>
+        </div>
+
+        <label for="painNotes">Pain notes</label>
+        <textarea id="painNotes" placeholder="e.g. worse on stairs, morning stiffness, pain after walking"></textarea>
+
+        <button class="primary-btn" type="button" id="saveEntryBtn">Save pain entry</button>
+        <button class="secondary-btn" type="button" id="cancelEditBtn" hidden>Cancel edit</button>
+      </div>
+
+      <div class="form-section">
+        <div class="privacy">
+          <strong>Privacy:</strong> For this browser-only version, records are stored locally on this device/browser unless you export or share them. Health data is not sent anywhere automatically.
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="card" id="historySection" style="margin-top:18px">
+    <div class="history-head">
+      <div>
+        <h2 style="margin-bottom:2px">Pain history</h2>
+        <div class="small-note">Edit or delete individual records. Multiple locations can be saved on the same date.</div>
+      </div>
+      <div class="top-actions">
+        <button class="tool-btn" type="button" id="csvBtn">Download CSV</button>
+        <button class="tool-btn" type="button" id="excelBtn">Download Excel</button>
+        <button class="tool-btn" type="button" id="shareBtn">Share / Email data</button>
+      </div>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </section>
+
+  <section class="card" id="chartSection" style="margin-top:18px">
+    <div class="chart-head">
+      <div>
+        <h2 style="margin-bottom:2px">Charts / pain trends</h2>
+        <div class="small-note">Select up to four locations. Missing dates in the chosen interval are displayed as 0.</div>
+      </div>
+      <button class="tool-btn" type="button" id="refreshChartBtn">Update chart</button>
+    </div>
+
+    <div class="chart-controls">
+      <div>
+        <label style="margin-top:0">Locations</label>
+        <div class="location-checks" id="chartLocations"></div>
+      </div>
+      <div>
+        <label for="chartStart" style="margin-top:0">Start date</label>
+        <input id="chartStart" type="date">
+      </div>
+      <div>
+        <label for="chartEnd" style="margin-top:0">End date</label>
+        <input id="chartEnd" type="date">
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <svg id="painChart" viewBox="0 0 900 360" role="img" aria-label="Pain trend chart"></svg>
+    </div>
+    <div class="chart-message" id="chartMessage"></div>
+  </section>
+
+  <details class="card about">
+    <summary>About this tool</summary>
+    <div class="about-body">
+      <p>This pain-tracking tool was developed by <strong>Dr. Zana Khan</strong>, a PhD holder in Geography whose research work spans environmental geography, climate change, spatial analysis and geospatial research.</p>
+      <p>Her own experience of living with long-term musculoskeletal and inflammatory symptoms motivated the development of a simple way for people living with autoimmune, inflammatory and arthritic conditions to document where pain occurs, monitor changes over time and maintain a structured record that can be exported or shared when needed.</p>
+      <p>The tool is intended to support personal symptom documentation and communication. It is not intended to diagnose disease or replace professional medical advice.</p>
+    </div>
+  </details>
+</main>
+
+<footer>
+  Pain Tracker stores records locally in your browser for this first version. Export your records regularly if you want a portable backup.
+</footer>
+
+<script>
+/* =========================================================
+   1. BASIC STATE, DATE HELPERS, AND STORAGE
+   ========================================================= */
+
+const STORAGE_KEY = "painTrackerEntriesV1";
+const PROFILE_KEY = "painTrackerProfileV1";
+let selectedPointId = null;
+let editingId = null;
+let memoryEntries = [];
+
+function todayLocal() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function parseDateOnly(s) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  const [y,m,d] = s.split("-").map(Number);
+  return new Date(Date.UTC(y, m-1, d));
+}
+
+function dateRange(start, end) {
+  const a = parseDateOnly(start);
+  const b = parseDateOnly(end);
+  if (!a || !b || a > b) return [];
+  const out = [];
+  for (let t = a.getTime(); t <= b.getTime(); t += 86400000) {
+    out.push(new Date(t).toISOString().slice(0,10));
+    if (out.length > 3700) break;
+  }
+  return out;
+}
+
+function readEntries() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return memoryEntries;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : memoryEntries;
+  } catch (e) {
+    return memoryEntries;
+  }
+}
+
+function writeEntries(entries) {
+  memoryEntries = entries;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  } catch (e) {}
+}
+
+function saveProfile(profile) {
+  try {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  } catch (e) {}
+}
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/* =========================================================
+   2. DOM REFERENCES AND PROFILE MANAGEMENT
+   ========================================================= */
+
+const entryDate = document.getElementById("entryDate");
+const painSlider = document.getElementById("painSlider");
+const painScore = document.getElementById("painScore");
+const selectedBox = document.getElementById("selectedBox");
+const selectedMeta = document.getElementById("selectedMeta");
+const saveEntryBtn = document.getElementById("saveEntryBtn");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+entryDate.value = todayLocal();
+entryDate.max = todayLocal();
+
+document.getElementById("symptomYear").max = String(new Date().getFullYear());
+document.getElementById("diagnosisYear").max = String(new Date().getFullYear());
+
+function selectedMedicationCategories() {
+  return [...document.querySelectorAll("#medicationCategories input:checked")].map(x => x.value);
+}
+
+function setMedicationCategories(values) {
+  const set = new Set(values || []);
+  document.querySelectorAll("#medicationCategories input").forEach(cb => {
+    cb.checked = set.has(cb.value);
+  });
+}
+
+function getProfileFromForm() {
+  const ageRaw = document.getElementById("age").value.trim();
+  let age = "";
+  if (ageRaw !== "") {
+    age = Math.max(0, Math.min(120, Number(ageRaw)));
+    if (!Number.isFinite(age)) age = "";
+  }
+
+  return {
+    patientAge: age,
+    gender: document.getElementById("gender").value,
+    diagnosis: document.getElementById("diagnosis").value,
+    otherDiagnosis: document.getElementById("otherDiagnosis").value.trim(),
+    diagnosisStatus: document.getElementById("diagnosisStatus").value,
+    diseaseDuration: document.getElementById("diseaseDuration").value,
+    symptomYear: document.getElementById("symptomYear").value.trim(),
+    diagnosisYear: document.getElementById("diagnosisYear").value.trim(),
+    diseaseNotes: document.getElementById("diseaseNotes").value.trim(),
+    medicationCategories: selectedMedicationCategories(),
+    medication: document.getElementById("medicationText").value.trim()
+  };
+}
+
+function applyProfileToForm(p) {
+  if (!p) return;
+  document.getElementById("age").value = p.patientAge ?? "";
+  document.getElementById("gender").value = p.gender || "";
+  document.getElementById("diagnosis").value = p.diagnosis || "";
+  document.getElementById("otherDiagnosis").value = p.otherDiagnosis || "";
+  document.getElementById("diagnosisStatus").value = p.diagnosisStatus || "";
+  document.getElementById("diseaseDuration").value = p.diseaseDuration || "";
+  document.getElementById("symptomYear").value = p.symptomYear || "";
+  document.getElementById("diagnosisYear").value = p.diagnosisYear || "";
+  document.getElementById("diseaseNotes").value = p.diseaseNotes || "";
+  setMedicationCategories(p.medicationCategories || []);
+  document.getElementById("medicationText").value = p.medication || "";
+}
+
+applyProfileToForm(loadProfile());
+
+/* =========================================================
+   3. BODY MAP INTERACTION
+   ========================================================= */
+
+const points = [...document.querySelectorAll(".pain-point")];
+
+function pointElement(id) {
+  return document.querySelector(`.pain-point[data-id="${CSS.escape(id)}"]`);
+}
+
+function selectPoint(id) {
+  selectedPointId = id;
+  points.forEach(p => p.classList.remove("selected"));
+  const el = pointElement(id);
+  if (!el) return;
+  el.classList.add("selected");
+
+  selectedBox.childNodes[0].nodeValue = el.dataset.label;
+  selectedMeta.textContent = `${el.dataset.view} • ${el.dataset.side} • ${el.dataset.region}`;
+}
+
+points.forEach(p => {
+  p.addEventListener("click", () => selectPoint(p.dataset.id));
+  p.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      selectPoint(p.dataset.id);
+    }
+  });
+});
+
+function painClass(score) {
+  if (score === 0) return "pain-zero";
+  if (score <= 3) return "pain-mild";
+  if (score <= 6) return "pain-moderate";
+  return "pain-severe";
+}
+
+function refreshPointColours() {
+  points.forEach(p => p.classList.remove("pain-zero","pain-mild","pain-moderate","pain-severe"));
+  const entries = readEntries().filter(e => e.date === entryDate.value);
+  const byPoint = new Map();
+
+  entries.forEach(e => {
+    const old = byPoint.get(e.anatomicalId);
+    if (old == null || Number(e.painScore) > old) {
+      byPoint.set(e.anatomicalId, Number(e.painScore));
+    }
+  });
+
+  byPoint.forEach((score, id) => {
+    const el = pointElement(id);
+    if (el) el.classList.add(painClass(score));
+  });
+
+  if (selectedPointId) {
+    const el = pointElement(selectedPointId);
+    if (el) el.classList.add("selected");
+  }
+}
+
+entryDate.addEventListener("change", refreshPointColours);
+
+/* =========================================================
+   4. PAIN SLIDER
+   ========================================================= */
+
+function updatePainScore() {
+  const v = Number(painSlider.value);
+  painScore.textContent = String(v);
+  painScore.style.color = v === 0 ? "var(--zero)" : v <= 3 ? "var(--mild)" : v <= 6 ? "var(--moderate)" : "var(--severe)";
+}
+painSlider.addEventListener("input", updatePainScore);
+updatePainScore();
+
+/* =========================================================
+   5. SAVE, EDIT, DELETE
+   ========================================================= */
+
+function makeId() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function resetPainForm() {
+  selectedPointId = null;
+  editingId = null;
+  points.forEach(p => p.classList.remove("selected"));
+  selectedBox.childNodes[0].nodeValue = "Tap a visible point on the body map";
+  selectedMeta.textContent = "";
+  entryDate.value = todayLocal();
+  painSlider.value = "0";
+  document.getElementById("painNotes").value = "";
+  saveEntryBtn.textContent = "Save pain entry";
+  cancelEditBtn.hidden = true;
+  updatePainScore();
+  refreshPointColours();
+}
+
+function saveEntry() {
+  if (!selectedPointId) {
+    alert("Please select a pain location first.");
+    return;
+  }
+
+  if (!entryDate.value) {
+    alert("Please select a date.");
+    return;
+  }
+
+  if (entryDate.value > todayLocal()) {
+    alert("Future dates are not allowed.");
+    return;
+  }
+
+  const el = pointElement(selectedPointId);
+  const profile = getProfileFromForm();
+  saveProfile(profile);
+
+  const now = new Date().toISOString();
+  const base = {
+    date: entryDate.value,
+    ...profile,
+    anatomicalId: selectedPointId,
+    anatomicalLocation: el.dataset.label,
+    bodySide: el.dataset.side,
+    bodyView: el.dataset.view,
+    region: el.dataset.region,
+    painScore: Number(painSlider.value),
+    notes: document.getElementById("painNotes").value.trim()
+  };
+
+  let entries = readEntries();
+
+  if (editingId) {
+    entries = entries.map(e => e.id === editingId ? {
+      ...e,
+      ...base,
+      updatedAt: now
+    } : e);
+  } else {
+    entries.push({
+      id: makeId(),
+      ...base,
+      createdAt: now,
+      updatedAt: now
+    });
+  }
+
+  writeEntries(entries);
+  resetPainForm();
+  renderHistory();
+  rebuildChartLocationList();
+  initializeChartDates();
+  renderChart();
+}
+
+saveEntryBtn.addEventListener("click", saveEntry);
+cancelEditBtn.addEventListener("click", resetPainForm);
+
+function editEntry(id) {
+  const entry = readEntries().find(e => e.id === id);
+  if (!entry) return;
+
+  editingId = id;
+  entryDate.value = entry.date;
+  painSlider.value = String(entry.painScore);
+  document.getElementById("painNotes").value = entry.notes || "";
+
+  applyProfileToForm(entry);
+  selectPoint(entry.anatomicalId);
+
+  saveEntryBtn.textContent = "Update pain entry";
+  cancelEditBtn.hidden = false;
+  updatePainScore();
+  refreshPointColours();
+  document.getElementById("recordPanel").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function deleteEntry(id) {
+  if (!confirm("Delete this pain entry?")) return;
+  writeEntries(readEntries().filter(e => e.id !== id));
+  renderHistory();
+  refreshPointColours();
+  rebuildChartLocationList();
+  initializeChartDates();
+  renderChart();
+}
+
+/* =========================================================
+   6. HISTORY
+   ========================================================= */
+
+function escapeHtml(value) {
+  const div = document.createElement("div");
+  div.textContent = String(value ?? "");
+  return div.innerHTML;
+}
+
+function scoreColour(v) {
+  v = Number(v);
+  return v === 0 ? "var(--zero)" : v <= 3 ? "var(--mild)" : v <= 6 ? "var(--moderate)" : "var(--severe)";
+}
+
+function renderHistory() {
+  const box = document.getElementById("historyList");
+  const entries = [...readEntries()].sort((a,b) => {
+    const d = b.date.localeCompare(a.date);
+    if (d) return d;
+    return String(b.createdAt).localeCompare(String(a.createdAt));
+  });
+
+  if (!entries.length) {
+    box.innerHTML = '<div class="empty">No pain entries yet.</div>';
+    return;
+  }
+
+  box.innerHTML = entries.map(e => {
+    const dx = e.otherDiagnosis || e.diagnosis || "";
+    return `
+      <article class="entry" style="border-left-color:${scoreColour(e.painScore)}">
+        <div>
+          <h4>${escapeHtml(e.anatomicalLocation)}</h4>
+          <div class="entry-meta">${escapeHtml(e.date)} • ${escapeHtml(e.bodySide)} • ${escapeHtml(e.bodyView)}${dx ? " • " + escapeHtml(dx) : ""}</div>
+          ${e.notes ? `<div class="entry-note">${escapeHtml(e.notes)}</div>` : ""}
+          <div class="entry-actions">
+            <button type="button" data-edit="${e.id}">Edit</button>
+            <button type="button" class="delete" data-delete="${e.id}">Delete</button>
+          </div>
+        </div>
+        <div class="score-badge" style="color:${scoreColour(e.painScore)}">${e.painScore}/10</div>
+      </article>
+    `;
+  }).join("");
+
+  box.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => editEntry(btn.dataset.edit)));
+  box.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.delete)));
+}
+
+/* =========================================================
+   7. CSV, EXCEL, AND SHARE / EMAIL EXPORT
+   ========================================================= */
+
+const exportColumns = [
+  ["Date","date"],
+  ["Age","patientAge"],
+  ["Gender","gender"],
+  ["Diagnosis","diagnosis"],
+  ["Other diagnosis","otherDiagnosis"],
+  ["Diagnosis status","diagnosisStatus"],
+  ["Disease duration","diseaseDuration"],
+  ["Year symptoms began","symptomYear"],
+  ["Year diagnosed","diagnosisYear"],
+  ["Disease notes","diseaseNotes"],
+  ["Medication categories","medicationCategories"],
+  ["Medication / treatment","medication"],
+  ["Body view","bodyView"],
+  ["Body side","bodySide"],
+  ["Region","region"],
+  ["Anatomical ID","anatomicalId"],
+  ["Anatomical location","anatomicalLocation"],
+  ["Pain score","painScore"],
+  ["Notes","notes"],
+  ["Created at","createdAt"],
+  ["Updated at","updatedAt"]
+];
+
+function csvCell(v) {
+  if (Array.isArray(v)) v = v.join("; ");
+  const s = String(v ?? "");
+  return `"${s.replace(/"/g,'""')}"`;
+}
+
+function buildCsv() {
+  const entries = readEntries();
+  const rows = [
+    exportColumns.map(c => c[0]),
+    ...entries.map(e => exportColumns.map(c => e[c[1]] ?? ""))
+  ];
+  return "\uFEFF" + rows.map(row => row.map(csvCell).join(",")).join("\n");
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function downloadCsv() {
+  if (!readEntries().length) {
+    alert("There is no data to export.");
+    return;
+  }
+  downloadBlob(new Blob([buildCsv()], {type:"text/csv;charset=utf-8"}), "pain-tracker-data.csv");
+}
+
+function loadSheetJS() {
+  return new Promise((resolve,reject) => {
+    if (window.XLSX) return resolve(window.XLSX);
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+    s.onload = () => resolve(window.XLSX);
+    s.onerror = () => reject(new Error("Could not load Excel export library"));
+    document.head.appendChild(s);
+  });
+}
+
+async function downloadExcel() {
+  const entries = readEntries();
+  if (!entries.length) {
+    alert("There is no data to export.");
+    return;
+  }
+
+  try {
+    const XLSX = await loadSheetJS();
+    const data = entries.map(e => {
+      const row = {};
+      exportColumns.forEach(([title,key]) => {
+        const v = e[key];
+        row[title] = Array.isArray(v) ? v.join("; ") : (v ?? "");
+      });
+      return row;
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws["!cols"] = exportColumns.map(([title]) => ({wch: Math.max(12, Math.min(35,title.length + 4))}));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pain History");
+    XLSX.writeFile(wb, "pain-tracker-data.xlsx");
+  } catch (err) {
+    alert("Excel export could not load. CSV export is still available.");
+  }
+}
+
+async function shareData() {
+  const entries = readEntries();
+  if (!entries.length) {
+    alert("There is no data to share.");
+    return;
+  }
+
+  const csvBlob = new Blob([buildCsv()], {type:"text/csv;charset=utf-8"});
+  const file = new File([csvBlob], "pain-tracker-data.csv", {type:"text/csv"});
+
+  try {
+    if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+      await navigator.share({
+        title:"Pain Tracker data",
+        text:"Pain Tracker symptom record",
+        files:[file]
+      });
+    } else {
+      downloadBlob(csvBlob, "pain-tracker-data.csv");
+      alert("File sharing is not supported by this browser. The CSV has been downloaded; attach it manually to your email.");
+    }
+  } catch (err) {
+    if (err && err.name === "AbortError") return;
+    downloadBlob(csvBlob, "pain-tracker-data.csv");
+    alert("The share sheet could not be opened. The CSV has been downloaded instead.");
+  }
+}
+
+document.getElementById("csvBtn").addEventListener("click", downloadCsv);
+document.getElementById("excelBtn").addEventListener("click", downloadExcel);
+document.getElementById("shareBtn").addEventListener("click", shareData);
+
+/* =========================================================
+   8. CHARTS / PAIN TRENDS
+   Native SVG chart keeps the app lightweight and works on
+   GitHub Pages without a chart-library dependency.
+   ========================================================= */
+
+const chartLocations = document.getElementById("chartLocations");
+const chartStart = document.getElementById("chartStart");
+const chartEnd = document.getElementById("chartEnd");
+const painChart = document.getElementById("painChart");
+const chartMessage = document.getElementById("chartMessage");
+const seriesColours = ["#285b9a","#2f9e62","#d98b17","#7455a8"];
+
+function uniqueLocationsWithEntries() {
+  const map = new Map();
+  readEntries().forEach(e => {
+    map.set(e.anatomicalId, e.anatomicalLocation);
+  });
+  return [...map.entries()].sort((a,b) => a[1].localeCompare(b[1]));
+}
+
+function rebuildChartLocationList() {
+  const previously = new Set([...chartLocations.querySelectorAll("input:checked")].map(x => x.value));
+  const locations = uniqueLocationsWithEntries();
+
+  if (!locations.length) {
+    chartLocations.innerHTML = '<div class="small-note">Save at least one pain entry to chart it.</div>';
+    return;
+  }
+
+  // Preserve previous chart selections only when those locations still exist.
+  // If an edited/deleted record removes all previously selected locations,
+  // automatically select the first one or two available locations.
+  const availableIds = new Set(locations.map(([id]) => id));
+  const preserved = new Set([...previously].filter(id => availableIds.has(id)));
+
+  chartLocations.innerHTML = locations.map(([id,label],i) => `
+    <label>
+      <input type="checkbox" value="${escapeHtml(id)}" ${preserved.has(id) || (!preserved.size && i < Math.min(2,locations.length)) ? "checked" : ""}>
+      ${escapeHtml(label)}
+    </label>
+  `).join("");
+
+  chartLocations.querySelectorAll("input").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const checked = chartLocations.querySelectorAll("input:checked");
+      if (checked.length > 4) {
+        cb.checked = false;
+        alert("Please select no more than four locations at a time.");
+      }
+    });
+  });
+}
+
+function initializeChartDates() {
+  const entries = readEntries();
+  if (!entries.length) {
+    chartStart.value = "";
+    chartEnd.value = "";
+    return;
+  }
+  const dates = entries.map(e => e.date).sort();
+  const minDate = dates[0];
+  const maxDate = dates[dates.length-1];
+
+  // Keep a user's chosen subset when valid, but automatically expand the
+  // chart range when newly saved data falls outside the current range.
+  if (!chartStart.value || chartStart.value > minDate) chartStart.value = minDate;
+  if (!chartEnd.value || chartEnd.value < maxDate) chartEnd.value = maxDate;
+
+  chartStart.max = todayLocal();
+  chartEnd.max = todayLocal();
+}
+
+function svgEl(name, attrs={}, text="") {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k,String(v)));
+  if (text) el.textContent = text;
+  return el;
+}
+
+function renderChart() {
+  painChart.innerHTML = "";
+
+  const selectedIds = [...chartLocations.querySelectorAll("input:checked")].map(x => x.value);
+  const start = chartStart.value;
+  const end = chartEnd.value;
+
+  if (!readEntries().length) {
+    chartMessage.textContent = "No data to chart yet.";
+    return;
+  }
+  if (!selectedIds.length) {
+    chartMessage.textContent = "Select at least one anatomical location.";
+    return;
+  }
+  if (!start || !end || start > end) {
+    chartMessage.textContent = "Choose a valid date range.";
+    return;
+  }
+
+  const dates = dateRange(start,end);
+  if (!dates.length) {
+    chartMessage.textContent = "No valid dates in the selected interval.";
+    return;
+  }
+
+  const W=900,H=360,left=60,right=20,top=25,bottom=55;
+  const plotW=W-left-right, plotH=H-top-bottom;
+
+  // Background grid
+  painChart.appendChild(svgEl("rect",{x:0,y:0,width:W,height:H,fill:"#ffffff"}));
+
+  for (let v=0; v<=10; v+=2) {
+    const y = top + plotH - (v/10)*plotH;
+    painChart.appendChild(svgEl("line",{x1:left,y1:y,x2:W-right,y2:y,stroke:"#e3e8ef","stroke-width":1}));
+    painChart.appendChild(svgEl("text",{x:left-12,y:y+4,"text-anchor":"end","font-size":11,fill:"#68758a"},String(v)));
+  }
+
+  painChart.appendChild(svgEl("line",{x1:left,y1:top,x2:left,y2:top+plotH,stroke:"#8b98aa","stroke-width":1.2}));
+  painChart.appendChild(svgEl("line",{x1:left,y1:top+plotH,x2:W-right,y2:top+plotH,stroke:"#8b98aa","stroke-width":1.2}));
+
+  const entries = readEntries();
+  const labelById = new Map(entries.map(e => [e.anatomicalId,e.anatomicalLocation]));
+
+  selectedIds.forEach((id,seriesIndex) => {
+    const daily = new Map();
+    entries.filter(e => e.anatomicalId===id && e.date>=start && e.date<=end).forEach(e => {
+      const old = daily.get(e.date);
+      if (old == null || Number(e.painScore) > old) daily.set(e.date,Number(e.painScore));
+    });
+
+    const pts = dates.map((d,i) => {
+      const x = left + (dates.length===1 ? plotW/2 : (i/(dates.length-1))*plotW);
+      const value = daily.has(d) ? daily.get(d) : 0;
+      const y = top + plotH - (value/10)*plotH;
+      return {x,y,value,date:d};
+    });
+
+    const colour = seriesColours[seriesIndex % seriesColours.length];
+    const polyline = pts.map(p => `${p.x},${p.y}`).join(" ");
+    painChart.appendChild(svgEl("polyline",{points:polyline,fill:"none",stroke:colour,"stroke-width":2.5,"stroke-linejoin":"round","stroke-linecap":"round"}));
+
+    pts.forEach(p => {
+      const c = svgEl("circle",{cx:p.x,cy:p.y,r:3.7,fill:colour});
+      const title = svgEl("title",{},`${labelById.get(id)} · ${p.date} · ${p.value}/10`);
+      c.appendChild(title);
+      painChart.appendChild(c);
+    });
+
+    const legendX = left + seriesIndex*200;
+    painChart.appendChild(svgEl("line",{x1:legendX,y1:12,x2:legendX+24,y2:12,stroke:colour,"stroke-width":3}));
+    painChart.appendChild(svgEl("text",{x:legendX+30,y:16,"font-size":11,fill:"#334155"},labelById.get(id) || id));
+  });
+
+  // X-axis labels: at most 7 labels
+  const tickCount = Math.min(7,dates.length);
+  const used = new Set();
+  for (let t=0;t<tickCount;t++) {
+    const idx = tickCount===1 ? 0 : Math.round((t/(tickCount-1))*(dates.length-1));
+    if (used.has(idx)) continue;
+    used.add(idx);
+    const x = left + (dates.length===1 ? plotW/2 : (idx/(dates.length-1))*plotW);
+    const label = dates[idx].slice(5);
+    painChart.appendChild(svgEl("text",{x,y:H-28,"text-anchor":"middle","font-size":10,fill:"#68758a"},label));
+  }
+
+  painChart.appendChild(svgEl("text",{x:18,y:top+plotH/2,transform:`rotate(-90 18 ${top+plotH/2})`,"text-anchor":"middle","font-size":11,fill:"#526174"},"Pain score"));
+  painChart.appendChild(svgEl("text",{x:left+plotW/2,y:H-8,"text-anchor":"middle","font-size":11,fill:"#526174"},"Date"));
+  chartMessage.textContent = `${dates.length} day(s) plotted. Dates without a saved entry are displayed as 0.`;
+}
+
+document.getElementById("refreshChartBtn").addEventListener("click", renderChart);
+chartStart.addEventListener("change", renderChart);
+chartEnd.addEventListener("change", renderChart);
+
+/* =========================================================
+   9. NAVIGATION AND INITIALIZATION
+   ========================================================= */
+
+document.getElementById("jumpHistoryBtn").addEventListener("click", () => document.getElementById("historySection").scrollIntoView({behavior:"smooth"}));
+document.getElementById("jumpChartsBtn").addEventListener("click", () => document.getElementById("chartSection").scrollIntoView({behavior:"smooth"}));
+
+renderHistory();
+refreshPointColours();
+rebuildChartLocationList();
+initializeChartDates();
+renderChart();
+</script>
+</body>
+</html>
